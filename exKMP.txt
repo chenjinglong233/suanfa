@@ -1,0 +1,46 @@
+void getnext()
+{
+    int i = 0;
+    int l = a.size();
+    ne[0] = l;
+    while(i + 1 < l && a[i] == a[i + 1]) i++;
+    ne[1] = i;
+    int a1 = 1;
+    for(i = 2;i < l;i ++)
+    {
+        int p = ne[a1] + a1 - 1;
+        int L = ne[i - a1];
+        if(L + i - 1 >= p)
+        {
+            int j = p - i + 1;
+            if(j < 0) j = 0;
+            while(j + i < l && a[i] == a[j + i]) j ++;
+            ne[i] = j;
+            a1 = i;
+        }
+        else ne[i] = ne[i - a1];
+    }
+}
+
+void exKMP()
+{
+    int i = 0;
+    int a1 = 0;
+    int l = b.size();
+    while(i < l && a[i] == b[i]) i ++;
+    ne[0] = i;
+    for(i = 1;i < l;i ++)
+    {
+        int p = ex[a1] + a1 - 1;
+        int L = ne[i - a1];
+        if(L + i - 1 >= p)
+        {
+            int j = p - i + 1;
+            if(j < 0) j = 0;
+            while(i + j < l && b[j + i] == a[j]) j ++;
+            ex[i] = j;
+            a1 = i;
+        }
+        else ex[i] = ne[i - a1];
+    }
+}

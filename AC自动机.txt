@@ -1,0 +1,88 @@
+#include<bits/stdc++.h>
+using namespace std;
+const int N = 10010, M = 1000010, S = 55;
+int tr[N * S][26], ne[N * S];  // 分别是字典树， 和失配指针；
+int idx, n, t;
+int cnt[N * S];     //表示这个节点处有多少个单词
+char str[M];
+
+void insert()
+{
+    int p = 0;
+    for(int i = 0; str[i]; i ++)
+    {
+        int u = str[i] - 'a';
+        if(!tr[p][u]) tr[p][u] = ++idx;
+        p = tr[p][u];
+    }
+    cnt[p] ++;
+}
+
+void get_next()
+{
+    queue<int>q;
+    for(int i = 0;i < 26;i ++)
+    {
+        if(tr[0][i])
+        {
+            q.push(tr[0][i]);
+        }
+    }
+    while(!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+        for(int i = 0;i < 26;i ++)
+        {
+            int c = tr[u][i];
+            if(!c) tr[u][i] = tr[ne[u]][i]; //让该节点指向其父亲节点失配指针的节点的儿子，为了后来指向能直接指向有效的地方
+            else
+            {
+                ne[c] = tr[ne[u]][i];//失配指针指向父亲节点的失配指针的节点的儿子
+                q.push(c);
+            }
+        }
+    }
+}
+
+int query()
+{
+    int ans = 0;
+    int j = 0;
+    for(int i = 0; str[i];i ++)
+    {
+        int u = str[i] - 'a';
+        j = tr[j][u];
+        int p = j;
+        while(p)
+        {
+            ans += cnt[p];
+            cnt[p] = 0;
+            p = ne[p];
+        }
+    }
+    return ans;
+}
+
+int main()
+{
+    scanf("%d",&t);
+    while(t --)
+    {
+        idx = 0;
+        memset(tr, 0, sizeof tr);
+        memset(cnt, 0, sizeof cnt);
+        memset(ne, 0, sizeof ne);
+        scanf("%d",&n);
+        for(int i = 1;i <= n;i ++)
+        {
+            scanf("%s", str);
+            insert();
+        }
+        get_next();
+        scanf("%s", str);
+        int ans = query();
+        printf("%d\n", ans);
+    }
+}
+

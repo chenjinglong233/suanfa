@@ -1,0 +1,23 @@
+int get_min()
+{
+    int i = 0, j = 1, k = 0;
+    while(i < n && k < n && j < n)
+    {
+        if(a[(i + k) % n] == a[(j + k) % n]) k ++;
+        else
+        {
+            if(a[i + k] > a[j + k])
+            {
+                i += k + 1;
+            }
+            else
+            {
+                j += k + 1;
+            }
+            if(i == j) j ++;
+            k = 0;
+        }
+    }
+    int res = min(i, j);
+    return res;
+}

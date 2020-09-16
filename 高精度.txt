@@ -1,0 +1,307 @@
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <string>
+using namespace std;
+int main() {
+    vector<int> c;
+    string s1,s2;
+    cin >> s1 >> s2;
+    int re = 0;
+    int s = 0;
+    int p1,p2;
+    p1 = s1.length()-1;
+    p2 = s2.length()-1;
+    while(p1 >=0 || p2>=0 ) {
+        s = re;
+        if(p1 >= 0)    s+= s1[p1--] - '0';
+        if(p2 >= 0)    s+= s2[p2--] - '0';
+        re = s/10;
+        c.push_back( s%10 );
+    }
+    if(re)    c.push_back(re);
+    for(int i=c.size() - 1; i>0 && c[i]==0; --i) {
+        c.pop_back();
+    }
+    for(int i=c.size()-1;i>=0;--i){
+        cout << c[i];
+    }
+    return 0;
+}
+
+#include <iostream>
+#include <cstdio>
+#include <string>
+#include <cstring>
+#include <vector>
+using namespace std;
+int main(){
+    string s1,s2;
+    vector<int> c;
+    cin >> s1 >> s2;
+    bool neg = false;
+    if( (s1.length() < s2.length()) || ( (s1.length() == s2.length())&&(s1 < s2) ) ){
+        neg = true;
+    }
+    string &a = (!neg?s1:s2),&b = (!neg?s2:s1);
+    int lena = a.length()-1;
+    int lenb = b.length()-1;
+    int re = 0;
+    int s = 0;
+    while(lena >=0 || lenb >=0){
+        s = re;
+        re = 0;
+        if(lena >= 0)    s+= a[lena--] - '0';
+        if(lenb >= 0)    s-= b[lenb--] - '0';
+        if(s < 0){
+            re = -1;
+            s += 10;            
+        }
+        c.push_back(s);
+    }
+    for(int i=c.size()-1;i>0 && c[i]==0;--i){
+        c.pop_back();
+    }        
+    if(neg) cout << "-";
+    for(int i=c.size()-1;i>=0;--i){
+        cout << c[i];
+    }
+    return 0;
+}
+
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <string>
+using namespace std;
+int main() {
+    vector<int> c;
+    string s1,s2;
+    cin >> s1 >> s2;
+    int s = 0;
+    int re = 0;
+    int lena = s1.length()-1;
+    int lenb = s2.length()-1;
+    for(int i=lena;i>=0;--i) {
+        re = 0;
+        for(int j=lenb;j>=0;--j){
+            int ii = lena - i;//0~lena
+            int jj = lenb - j;//0~lenb
+        /*    [ dis ][  j  ][  i  ]
+            [      c.size()        ]    */ 
+            int len = c.size();
+            int dis = len-jj-ii;
+            s = re;
+            s += (s1[i] - '0') * (s2[j] - '0');
+            if(dis<=0){
+                c.push_back(s%10);
+            }else{
+                s += c[len-dis];
+                c[len-dis] = s%10;
+            }
+            re = s/10;
+        }
+        if(re){
+            c.push_back(re);
+        }
+    }
+    for(int i=c.size() - 1; i>0 && c[i]==0; --i) {
+        c.pop_back();
+    }
+    for(int i=c.size()-1;i>=0;--i){
+        cout << c[i];
+    }
+    return 0;
+}
+
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <string>
+#include <queue>
+using namespace std;
+int main() {
+    string s1;
+    deque<int> c;
+    cin >> s1;
+    int b;
+    cin >> b;
+    int x = 0;
+    for(int i=0;i<s1.length();++i){
+        int t = s1[i] - '0' + x*10;
+        c.push_back( t/b );
+        x = t%b;
+    }
+    while(c.size() >=1 && c.front() ==0){
+        c.pop_front();
+    }
+    for(int i=0;i<c.size();i++){
+        cout << c[i];
+    }
+    cout << endl;
+    cout << x;
+    return 0;
+}
+
+
+/* 
+ * @Author: lzyws739307453 
+ * @Language: C++ 
+ */
+#include <bits/stdc++.h>
+using namespace std;
+const int MAXN = 1e3 + 5;
+bool isp[MAXN];
+char str[MAXN];
+int pre[MAXN], cnt;
+struct edge {
+    int p[MAXN], size;
+    edge() {//初始化
+        size = 0;
+        memset(p, 0, sizeof(p));
+    }
+    int cmp(edge b) {//高精度比大小
+        if (size > b.size) return 1;
+        if (size < b.size) return -1;
+        for (int i = size - 1; ~i; i--) {
+            if (p[i] > b.p[i]) return 1;
+            if (p[i] < b.p[i]) return -1;
+        }
+        return 0;
+    }
+    edge mul(int b) {//高精度*单精度
+        edge c;
+        int t = 0;
+        for (int i = 0; i < size || t; i++) {
+            if (i < size)
+                t += p[i] * b;
+            c.p[c.size++] = t % 10;
+            t /= 10;
+        }
+        return c;
+    }
+    edge Mul(edge b) {//高精度*高精度
+        edge c;
+        int t = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < b.size; j++) {
+                t += p[i] * b.p[j];
+                c.p[i + j] += t % 10;
+                t /= 10;
+            }
+        }
+        c.size = size + b.size - 1;
+        while (t) {
+            c.p[c.size++] = t % 10;
+            t /= 10;
+        }
+        return c;
+    }
+    edge Sub(edge b) {//高精度-高精度
+        edge c;
+        int t = 0;
+        for (int i = 0; i < size; i++) {
+            t = p[i] - t;
+            if (i < b.size)
+                t -= b.p[i];
+            c.p[i] = (t + 10) % 10;
+            t = t < 0;
+        }
+        c.size = size;
+        while (c.size > 1 && !c.p[c.size - 1]) --c.size;
+        return c;
+    }
+    edge Div(edge b) {//高精度/高精度
+        edge quo, rem = *this;
+        quo.size = 1, quo.p[0] = 0;
+        if (rem.cmp(b) < 0)
+            return quo;
+        quo.size = rem.size - b.size;
+        for (int i = rem.size - 1; ~i; i--) {
+            if (i >= quo.size) b.p[i] = b.p[i - quo.size];
+            else b.p[i] = 0;
+        }
+        b.size = rem.size;
+        for (int i = 0; i <= quo.size; i++) {
+            while (rem.cmp(b) >= 0) {
+                rem = rem.Sub(b);
+                quo.p[quo.size - i]++;
+            }
+            for (int j = 0; j < b.size - 1; j++)
+                b.p[j] = b.p[j + 1];
+            --b.size;
+        }
+        ++quo.size;
+        while (quo.size > 1 && !quo.p[quo.size - 1]) --quo.size;
+        return quo;
+    }
+    edge Mod(edge b) {//高精度%高精度
+        edge quo, rem = *this;
+        quo.size = 1, quo.p[0] = 0;
+        if (rem.cmp(b) < 0)
+            return rem;
+        quo.size = rem.size - b.size;
+        for (int i = rem.size - 1; ~i; i--) {
+            if (i >= quo.size) b.p[i] = b.p[i - quo.size];
+            else b.p[i] = 0;
+        }
+        ++quo.size;
+        b.size = rem.size;
+        for (int i = 0; i < quo.size; i++) {
+            while (rem.cmp(b) >= 0) {
+                rem = rem.Sub(b);
+                quo.p[quo.size - i - 1]++;
+            }
+            for (int j = 0; j < b.size - 1; j++)
+                b.p[j] = b.p[j + 1];
+            --b.size;
+        }
+        while (rem.size > 1 && !rem.p[rem.size - 1]) --rem.size;
+        return rem;
+    }
+	edge gcd(edge b) {//高精度取最大公约数
+		if (!b.p[0] && b.size == 1)
+			return *this;
+		return b.gcd(Mod(b));
+	}
+};
+void Get_prime(int n) {//质数筛
+    cnt = 0;
+    for (int i = 2; i < n; i++) {
+        if (!isp[i])
+            pre[cnt++] = i;
+        for (int j = 0; i * pre[j] < n && j < cnt; j++) {
+            isp[i * pre[j]] = true;
+            if (!(i % pre[j]))
+                break;
+        }
+    }
+}
+int main() {
+    int t;
+    Get_prime(300);
+    scanf("%d", &t);
+    while (t--) {
+        edge m, Mol, Den;
+        scanf("%s", str);
+        int len = strlen(str);
+        for (int i = 0; i < len; i++)
+            m.p[len - i - 1] = str[i] - '0';
+        m.size = len;
+        Mol.size = 1, Mol.p[0] = 1;
+        Den.size = 1, Den.p[0] = 1;
+        for (int i = 0; Mol.mul(pre[i]).cmp(m) <= 0; i++) {
+            Mol = Mol.mul(pre[i]);
+            Den = Den.mul(pre[i] + 1);
+        }
+        edge Gcd = Den.gcd(Mol);
+        Mol = Mol.Div(Gcd), Den = Den.Div(Gcd);
+        for (int i = Mol.size - 1; ~i; i--)
+            printf("%d", Mol.p[i]);
+        printf("/");
+        for (int i = Den.size - 1; ~i; i--)
+            printf("%d", Den.p[i]);
+        printf("\n");
+    }
+    return 0;
+}

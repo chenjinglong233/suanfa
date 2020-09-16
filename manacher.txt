@@ -1,0 +1,69 @@
+#include<iostream>
+#include<time.h>
+#include<cstdio>
+#include<cmath>
+#include<queue>
+#include<stack>
+#include<vector>
+#include<cstring>
+#include<map>
+#include<algorithm>
+#include<string>
+#include<set>
+#include<sstream>
+#include<iomanip>
+#define INF 0x3f3f3f3f
+using namespace std;
+const int mod = 1e9+7;
+typedef long long ll;
+string a;
+int p [100010];
+int maxlen = 1;
+int maxcenter = 0;
+
+void manacher()
+{
+    string t = "$#";
+    for(int i = 0;i < a.size(); i++)
+    {
+        t += a[i];
+        t += "#";
+    }
+    int mx = 0, id = 0;
+    for(int i = 0;i < t.size();i ++)
+    {
+        p[i] = mx > i ? min(p[2 * id - i], mx - i) : 1;
+        while(t[i + p[i]] == t[i - p[i]]) p[i] ++;
+        if(mx < i + p[i])
+        {
+            id = i;
+            mx = i + p[i];
+        }
+        if(p[i] > maxlen)
+        {
+            maxlen = p[i];
+            maxcenter = i;
+        }
+    }
+}
+
+bool Query(int l, int r) /// 判断源串中的某一子串 ss[l...r] 是否为回文串
+{
+    return p[l + r + 2] - 1 >= r - l + 1;
+}
+
+int main()
+{
+    cin >> a;
+    manacher();
+    for(int i = (maxcenter - maxlen) / 2,num = 1;num <= maxlen - 1;i ++,num ++)
+    {
+        cout << a[i];
+    }
+    cout << endl;
+    /*
+    cout.setf(ios::fixed);
+    cout << fixed << setprecision(2) << res << "%" << endl;
+    */
+    return 0;
+}

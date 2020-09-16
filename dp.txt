@@ -1,0 +1,688 @@
+最长递增子序列
+给定一个序列，找到最长子序列的长度，使得子序列中的所有元素被排序的顺序增加。
+
+1.求最长递增子序列的长度O(N^2)
+int Arr[30010],List[30010];
+int LIS(int *Arr,int N)    //arr[]存放的是待求数组
+{
+    int Max = 0;        //max为最大递增子序列的长度
+    for(int i = 1; i <= N; ++i)
+        List[i] = 1;    //lis[i] 存放i之前的最大递增子序列的长度，初始都为1
+
+    for(int i = 2; i <= N; ++i)
+        for(int j = 1; j < i; ++j)    //遍历i之前所有位置
+            if(Arr[i] >= Arr[j] && List[i]<List[j]+1)
+                List[i] = List[j] + 1;
+            //arr[i]>arr[j]为递增
+            //lis[i]<lis[j] + 1确保为当前最长递增序列
+
+    for(int i = 1; i <= N; ++i)
+        if(Max < List[i])
+            Max = List[i];
+
+    return Max;
+}
+
+2.求最长递增子序列的长度O(NlogN)
+
+int Arr[10010],List[10010];
+int Stack[10010];
+int LIS(int *Arr,int N)
+{
+    int top = 0;
+    Stack[top] = -1;
+    for(int i = 1; i <= N; ++i)
+    {
+        if(Arr[i] > Stack[top])
+            Stack[++top] = Arr[i];
+        else
+        {
+            int low = 1;
+            int high = top;
+            while(low <= high)
+            {
+                int mid = (low + high)/2;
+                if(Arr[i] > Stack[mid])
+                    low = mid + 1;
+                else
+                    high = mid - 1;
+            }
+            Stack[low] = Arr[i];
+        }
+    }
+    return top;
+}
+
+最大连续子序列和
+
+给定一个整数序列，找出所有连续子序列中元素和最大的一个，并找到起点和终点。
+int a[110000],N,pos1,pos2,Start,End;
+//Start、End存储最大连续子序列的起点和终点
+int MaxSubSum(int *a)
+{
+    int MaxSum = a[0],Sum = a[0];
+    pos1 = pos2 = Start = End = 0;
+    for(int i = 1; i < N; ++i)
+    {
+        Sum += a[i];
+        if(Sum < a[i])
+        {
+            Sum = a[i];
+            pos1 = i;
+            pos2 = i;
+        }
+        else
+        {
+            pos2 = i;
+        }
+
+        if(MaxSum < Sum)
+        {
+            MaxSum = Sum;
+            Start = pos1;
+            End = pos2;
+        }
+    }
+    return MaxSum;
+}
+
+最大连续子矩阵和
+给你一个N，接下来是N*N的矩阵。数有正有负，求最大的子矩阵和。
+#include<stdio.h>
+#include<string.h>
+#include<algorithm>
+using namespace std;
+
+int map[110][110],dp[110][110];
+int main()
+{
+    int N,a;
+    while(~scanf("%d",&N) && N)
+    {
+        memset(map,0,sizeof(map));
+        memset(dp,0,sizeof(dp));
+        for(int i = 1; i <= N; i++)
+        {
+            for(int j = 1; j <= N; j++)
+            {
+                scanf("%d",&a);
+                map[i][j] = map[i][j-1] + a;
+                //map[i][j]表示第i行前j列的和
+            }
+        }
+        int Max = -0xffffff0;
+        for(int j = 1; j <= N; j++)
+        {
+            for(int i = 1; i <= j; i++)
+            {
+                dp[i][j] = 0;
+                for(int k = 1; k <= N; k++)
+                {
+                    //ans求的是前k行，第i到第j列的最大和
+                    dp[i][j]= max(dp[i][j]+map[k][j]-map[k][i-1],map[k][j]-map[k][i-1]);
+                    if(dp[i][j] > Max)
+                        Max = dp[i][j];
+                }
+            }
+        }
+        printf("%d\n",Max);
+    }
+    return 0;
+}
+
+最大M个连续子段的和
+#include<stdio.h>
+#include<string.h>
+#include<algorithm>
+using namespace std;
+
+int dp[1000010];
+int maxn[1000010];
+int num[1000010];
+int main()
+{
+    int M,N;
+    while(~scanf("%d%d",&M,&N))
+    {
+        dp[0] = maxn[0] = 0;
+        for(int i = 1; i <= N; i++)
+        {
+            scanf("%d",&num[i]);
+            dp[i] = maxn[i] = 0;
+        }
+        int MAXN;
+        for(int i = 1; i <= M; i++)//分为i段
+        {
+            MAXN = -0xffffff0;
+            for(int j = i; j <= N; j++)//第j个数字
+            {
+                dp[j] = max(dp[j-1]+num[j],maxn[j-1]+num[j]);
+                maxn[j-1] = MAXN;
+                MAXN = max(MAXN,dp[j]);
+            }
+        }
+        printf("%d\n",MAXN);
+    }
+
+    return 0;
+}
+
+最大不连续子序列和
+给你一个矩阵，不能选择每行中相邻的数字，也不能选当前行的上一
+行和下一行，问使所选数和最大的值是多少？
+对于每一行，都是求最大不连续子段和。
+#include<stdio.h>
+#include<string.h>
+#include<algorithm>
+using namespace std;
+const int MAXN = 200000;
+int dpa[MAXN+20],dpb[MAXN+20],row[MAXN+20];
+int main()
+{
+    int M,N,num;
+    while(~scanf("%d%d",&M,&N))
+    {
+        memset(row,0,sizeof(row));
+        for(int i = 0; i < M; i++)
+        {
+            dpa[0] = dpb[0] = 0;
+            for(int j = 0; j < N; j++)
+            {
+                scanf("%d",&num);
+                dpa[j+1] = max(dpa[j],dpb[j]);// dp[j+1] 是到j为止，不吃j所能吃到的最大值
+                dpb[j+1] = dpa[j] + num;//吃j所能吃到的最大值
+            }
+            row[i] = max(dpa[N],dpb[N]);
+        }
+        dpa[0] = dpb[0] = 0;
+        for(int i = 0; i < M; i++)
+        {
+            dpa[i+1] = max(dpa[i],dpb[i]);
+            dpb[i+1] = dpa[i] + row[i];
+        }
+        int ans = max(dpa[M],dpb[M]);
+        printf("%d\n",ans);
+    }
+    return 0;
+}
+
+最长公共子序列
+给定两个序列，找出在两个序列中同时出现的最长子序列的长度。一个子序列是出现在相对顺序的序列，但不一定是连续的。
+
+1.求最长公共子序列长度
+char s1[220],s2[220];
+int dp[220][220];
+//求串s1和串s2的公共子序列
+int lcs(char *s1,char *s2)
+{
+    int len1 = strlen(s1);
+    int len2 = strlen(s2);
+    for(int i = 0; i <= len1; ++i)
+    {
+        for(int j = 0; j <= len2; ++j)
+        {
+            if(i == 0 || j == 0)
+                dp[i][j] = 0;
+            else if(s1[i-1] == s2[j-1])
+                dp[i][j] = dp[i-1][j-1] + 1;
+            else
+                dp[i][j] = max(dp[i-1][j],dp[i][j-1]);
+        }
+    }
+    return dp[len1][len2];
+}
+
+2.求最长公共子序列长度，并输出路径
+int dp[110][110],pre[110][110],len1,len2;
+char s1[110],s2[110];
+
+void LCS(char *s1,char *s2)
+{
+    for(int i = 0; i <= len1; ++i)
+        pre[i][0] = 1;
+    for(int i = 0; i <= len2; ++i)
+        pre[0][i] = 2;
+    //得到最长公共子序列，并标记dp[i][j]的上一个状态，用来回溯寻找路径
+    for(int i = 0; i <= len1; ++i)
+    {
+        for(int j = 0; j <= len2; ++j)
+        {
+            if(i == 0 || j == 0)
+                dp[i][j] = 0;
+            if(s1[i-1] == s2[j-1])
+            {
+                dp[i][j] = dp[i-1][j-1] + 1;
+                pre[i][j] = 0;
+            }
+            else if(dp[i-1][j] >= dp[i][j-1])
+            {
+                dp[i][j] = dp[i-1][j];
+                pre[i][j] = 1;
+            }
+            else
+            {
+                dp[i][j] = dp[i][j-1];
+                pre[i][j] = 2;
+            }
+        }
+    }
+}
+
+void Print(int i,int j) //回溯输出新的字符串序列
+{
+    if(i == 0 && j == 0)
+        return ;
+    if(pre[i][j] == 0)
+    {
+        Print(i-1,j-1);
+        printf("%c",s1[i-1]);
+    }
+    else if(pre[i][j] == 1)
+    {
+        Print(i-1,j);
+        printf("%c",s1[i-1]);
+    }
+    else
+    {
+        Print(i,j-1);
+        printf("%c",s2[j-1]);
+    }
+}
+
+void solve(char *s1,char *s2)
+{
+    len1 = strlen(s1);
+    len2 = strlen(s2);
+    LCS(s1,s2);
+    Print(len1,len2);
+    printf("\n");
+}
+
+最长回文子序列
+给一个字符串，找出它的最长的回文子序列LPS的长度。例如，如果给定的序列是“BBABCBCAB”，则输出应该是7，“BABCBAB”是在它的最长回文子序列。
+char s[2020];
+int dp[2020][2020];
+//dp[i][j]表示s[i~j]最长回文子序列
+int LPS(char *s)
+{
+    memset(dp,0,sizeof(dp));
+    int len = strlen(s);
+    for(int i = len-1; i >= 0; --i)
+    {
+        dp[i][i] = 1;
+        for(int j = i+1; j < len; ++j)
+        {
+            if(s[i] == s[j])    //头尾相同，最长回文子序列为去头尾的部分LPS加上头和尾
+                dp[i][j] = dp[i+1][j-1] + 2;
+            else    //头尾不同，最长回文子序列是去头部分的LPS和去尾部分LPS较长的
+                dp[i][j] = max(dp[i][j-1],dp[i+1][j]);
+        }
+    }
+
+    return dp[0][len-1];
+}
+
+最长回文子串
+给一个字符串，找出它的最长的回文子串(连续的串)的长度。
+char str[2000020],s[2000020];
+//str为待求的原串,s为处理后的新串
+int P[2000020];
+//P［i］记录的是以字符str［i］为中心的最长回文串的半径
+void Pre(char *str)
+{
+    int len = strlen(str);
+    s[0] = '$';
+    s[1] = '#';
+    for(int i = 0; i < len; ++i)
+    {
+        s[i*2+2] = str[i];
+        s[i*2+3] = '#';
+    }
+    s[len*2+2] = '\0';
+}
+//返回最长回文子串长度
+int Manacher(char *s)
+{
+    int Max = 0;
+    int len = strlen(s);
+    int id = 0;
+    for(int i = 1; i < len; ++i)
+    {
+        if(Max > i)
+            P[i] = min(P[2*id-i],P[id]+id-i);
+        else
+            P[i] = 1;
+        while(s[i+P[i]] == s[i-P[i]])
+            P[i]++;
+        if(P[i]+i > Max)
+        {
+            Max = P[i]+i;
+            id = i;
+        }
+    }
+    int ans = 0;
+    for(int i = 2; i < len; ++i)
+        if(ans < P[i])
+            ans = P[i];
+    return ans-1;//返回最长回文子串长度
+}
+
+
+int main()
+{
+    while(~scanf("%s",str))
+    {
+        Pre(str);
+        printf("%d\n",Manacher(s));
+    }
+
+    return 0;
+}
+
+最小编辑距离
+给定一个长度为m和n的两个字符串，设有以下几种操作：替换（R），插入（I）和删除（D）且都是相同的操作。寻找到转换一个字符串插入到另一个需要修改的最小（操作）数量。
+int dp[1010][1010],len1,len2;
+char s1[1010],s2[1010];
+int EditDist(char *s1,char *s2)
+{
+    int len1 = strlen(s1);
+    int len2 = strlen(s2);
+//当两个字符串的大小为0，其操作距离为0。
+//当其中一个字符串的长度是零，需要的操作距离就是另一个字符串的长度. 
+    for(int i = 0; i <= len1; ++i)
+        dp[i][0] = i;
+    for(int i = 0; i <= len2; ++i)
+        dp[0][i] = i;
+
+    for(int i = 1; i <= len1; ++i)
+    {
+        for(int j = 1; j <= len2; ++j)
+        {
+            if(s1[i-1] == s2[j-1])  //对齐s1[i-1]和s2[j-1]，不需改变
+                dp[i][j] = dp[i-1][j-1];
+            else    
+                dp[i][j] = min(dp[i-1][j],min(dp[i][j-1],dp[i-1][j-1])) + 1;
+            //s1前缀右对齐,s2前缀右为' ',删除s1第i个字符 -> dp[i-1][j]
+            //s2前缀右对齐,s1前缀右为' ',删除s2第j个字符 -> dp[i][j-1]
+            //s1前缀右对齐,s2前缀右对齐,i、j不一样，替换 -> dp[i-1][j-1]
+        }
+    }
+    return dp[len1][len2];
+}
+
+01背包
+有 N 件物品和一个容量为 V 的背包。放入第 i 件物品耗费的空间是 C i ，得到的价值是 W i 。求解将哪些物品装入背包可使价值总和最大。
+要求恰好装满背包，在初始化时 F[0] = 0 ，其它 F[1~V ] 均设为 −∞ 。
+没有要求必须把背包装满，而是只希望价格尽量大，初始化时应该将 F[0~V ] 全部设为 0 。
+求方案数时，在初始化时F[0] = 1，其他F[1~V]均设为0。
+int c[1100],w[1100],dp[1100],V;
+//c[]：物品所占容量;w[]物品的价值;V为背包容量
+memset(dp,0,sizeof(dp));
+for(int i = 0; i < N; ++i)//第i件物品
+{
+     for(int j = V; j >= c[i]; j--)//填满空间j
+     {
+         dp[j] = max(dp[j],dp[j-c[i]] + w[i]);
+     }
+}
+
+完全背包
+有 N 种物品和一个容量为 V 的背包，每种物品都有无限件可用。放入第 i 种物品的耗费的空间是 C i ，得到的价值是 W i 。求解：将哪些物品装入背包，可使这些物品的耗费的空间总和不超过背包容量，且价值总和最大。
+int c[1100],w[1100],dp[1100],V;
+//c[]：物品所占容量;w[]物品的价值;V为背包容量
+memset(dp,0,sizeof(dp));
+for(int i = 0; i < N; ++i)
+{
+    for(int j = c[i]; j <= V; j++)
+    {
+        dp[j] = max(dp[j],dp[j-c[i]] + w[i]);
+    }
+}
+
+多重背包
+有 N 种物品和一个容量为 V 的背包。第 i 种物品最多有 M i 件可用，每件耗费的空间是 C i ，价值是 W i 。求解将哪些物品装入背包可使这些物品的耗费的空间总和不超过背包容量，且价值总和最大。
+
+二进制优化做法：
+int c[110],w[110],m[110],dp[100010],V;
+//c[]:物品所占容量;w[]物品的价值;m[]物品的数量;V为背包容量
+void ZeroOne(int cost,int weight)//01背包
+{
+    for(int i = V; i >= cost; i--)
+        dp[i] = max(dp[i],dp[i-cost]+weight);
+}
+
+void Complete(int cost,int weight)//完全背包
+{
+    for(int i = cost; i <= V; i++)
+        dp[i] = max(dp[i],dp[i-cost]+weight);
+}
+
+void Multiple(int cost,int weight,int cnt)//多重背包
+{
+//如果总容量比这个物品的容量要小，那么这个物品可以直接取完，相当于完全背包
+    if(V <= cnt*cost)
+    {
+        Complete(cost,weight);
+        return;
+    }
+    else//否则就将多重背包转化为01背包
+    {
+        int k = 1;
+        while(k <= cnt)
+        {
+            ZeroOne(k*cost,k*weight);
+            cnt -= k;
+            k <<= 1;
+        }
+        ZeroOne(cnt*cost,cnt*weight);
+    }
+}
+    /*
+    for(int i = 0; i <= V; i++)//初始化,不要求恰好装满背包
+        dp[i] = 0;  
+    */
+    for(int i = 0; i <= V; i++)//初始化：是否恰好装满背包
+        dp[i] = -0xffffff0;
+    dp[0] = 0;
+    for(int i = 0; i < N; i++)
+        Multiple(v[i],v[i],c[i]);
+
+
+二维费用背包
+int c1[110],c2[110],w[110],dp[1010][1010],V1,V2;
+memset(dp,0,sizeof(dp));  
+
+for(int i = 0; i < N; i++)//第i个  
+{  
+    for(int j = c1[i]; j <= V1; j++)//一维费用 
+    {  
+        for(int k = c2[i]; k <= V2; k++)//二维费用  
+        {  
+            dp[j][k] = max(dp[j][k],dp[j-c1[i]][k-c2[i]] + w[i]);  
+        }  
+    }  
+}  
+
+切割钢条
+给定一段长度为n英寸的钢条和一个价格表Pi，求切割方案，使
+得销售收益Rn最大。
+//自底向上法  
+#include<stdio.h>  
+#include<algorithm>  
+using namespace std;  
+const int INF = 0xffffff0;  
+int p[110],r[110];//r[n]来保存子问题  
+
+int BOTTOM_UP_CUT_ROD(int n)  
+{  
+    r[0] = 0;//长度为0的钢条没有收益  
+    for(int j = 1; j <= n; j++)//对j=1,2,3,…,n按升序求解每个规模为j的子问题。  
+    {  
+        int q = -INF;  
+        for(int i = 1; i <= j; i++)  
+        {  
+            q = max(q,p[i]+r[j-i]);//直接访问数组r[j-i]来获得规模为j-i的子问题的解  
+        }  
+        r[j] = q;  
+    }  
+    return r[n];  
+}  
+int main()  
+{  
+    int N;  
+    while(~scanf("%d",&N))  
+    {  
+        for(int i = 1; i <= N; i++)  
+            scanf("%d",&p[i]);  
+
+        int ans = BOTTOM_UP_CUT_ROD(N);  
+        printf("%d\n",ans);  
+    }  
+    return 0;  
+}  
+
+最大正方形
+int n, m, k;
+int a[2020][2020];
+int dp[2020][2020];
+
+int main()
+{
+    scanf("%d%d",&n, &m);
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = 1;j <= m;j ++)
+        {
+            scanf("%d",&a[i][j]);
+        }
+    }
+    int ans = 0;
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = 1;j <= m;j ++)
+        {
+            if(a[i][j] == 1 && a[i - 1][j] == 1 && a[i][j - 1] == 1 && a[i - 1][j - 1] == 1)
+            {
+                dp[i][j] = min(min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]) + 1;
+            }
+            else if(a[i][j] == 1) dp[i][j] = 1;
+            ans = max(dp[i][j], ans);
+        }
+    }
+
+    printf("%d\n",ans);
+    return 0;
+}
+
+最大矩形
+char a[2020][2020];
+int l[1010][1010];
+int r[1010][1010];
+int h[1010][1010];
+
+int main()
+{
+    scanf("%d %d",&n ,&m);
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = 1;j <= m;j ++)
+        {
+            cin >> a[i][j];
+            l[i][j] = j;
+            r[i][j] = j;
+            h[i][j] = 1;
+
+        }
+    }
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = 2;j <= m;j ++)
+        {
+            if(a[i][j] == 'F' && a[i][j - 1] == 'F')
+            {
+                l[i][j] = l[i][j - 1];
+            }
+        }
+    }
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = m - 1;j >= 1;j --)
+        {
+            if(a[i][j] == 'F' && a[i][j + 1] == 'F')
+            {
+                r[i][j] = r[i][j + 1];
+            }
+        }
+    }
+    int ans = 0;
+    for(int i = 1;i <= n;i ++)
+    {
+        for(int j = 1;j <= m;j ++)
+        {
+            if(a[i][j] == a[i - 1][j] && a[i][j] == 'F')
+            {
+                l[i][j] = max(l[i][j], l[i - 1][j]);
+                r[i][j] = min(r[i][j], r[i - 1][j]);
+                h[i][j] = h[i - 1][j] + 1;
+            }
+            ans = max(ans, (r[i][j] - l[i][j] + 1) * h[i][j]);
+        }
+    }
+
+    printf("%d\n",ans * 3);
+    return 0;
+}
+
+最大菱形
+char a[2020][2020];
+int dp[4][2020][2020];
+ 
+int main()
+{
+    scanf("%d%d",&n, &m);
+    for(int i = 0;i < n;i ++)
+    {
+        scanf("%s", a[i]);
+    }
+    for(int i = 1;i < n - 1;i ++)
+    {
+        for(int j = 1;j < m - 1;j ++)
+        {
+            if(a[i][j] == a[i][j - 1] && a[i][j] == a[i - 1][j])
+                dp[0][i][j] = max(1, min(dp[0][i][j - 1], dp[0][i - 1][j]) + 1);
+ 
+        }
+        for(int j = m - 2;j >= 1;j --)
+        {
+            if(a[i][j] == a[i - 1][j] && a[i][j] == a[i][j + 1])
+                dp[1][i][j] = max(1, min(dp[1][i][j + 1], dp[1][i - 1][j]) + 1);
+        }
+    }
+    for(int i = n - 2;i >= 1;i --)
+    {
+        for(int j = 1;j < m - 1;j ++)
+        {
+            if(a[i][j] == a[i + 1][j] && a[i][j] == a[i][j - 1])
+                dp[2][i][j] = max(1, min(dp[2][i][j - 1], dp[2][i + 1][j]) + 1);
+        }
+        for(int j = m - 2;j >= 1;j --)
+        {
+ 
+            if(a[i][j] == a[i][j + 1] && a[i][j] == a[i + 1][j])
+                dp[3][i][j] = max(1, min(dp[3][i][j + 1], dp[3][i + 1][j]) + 1);
+        }
+    }
+    int ans = 0;
+    for(int i = 0;i < n;i ++)
+    {
+        for(int j = 0;j < m;j ++)
+        {
+            ans ++;
+            ans += min(min(dp[0][i][j], dp[1][i][j]), min(dp[2][i][j], dp[3][i][j]));
+            //printf("%d ",min(min(dp[0][i][j], dp[1][i][j]), min(dp[2][i][j], dp[3][i][j])));
+        }
+        //printf("\n");
+    }
+    printf("%d\n",ans);
+    return 0;
+}

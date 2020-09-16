@@ -1,0 +1,44 @@
+#include<cstdio>
+#include<cstring>
+#include<vector>
+#include<queue>
+using namespace std;
+const int maxn=100+10;
+int n,m;
+vector<int> G[maxn];//G[i]表示i节点所指向的所有其他点
+int in[maxn];//节点入度
+bool topo()//判断该图是否可拓扑排序
+{
+    queue<int> Q;
+    int sum=0;//记录可拆解的点数目
+    for(int i=0;i<n;i++)if(in[i]==0)
+        Q.push(i);
+    while(!Q.empty())
+    {
+        int u=Q.front(); Q.pop();
+        sum++;
+        for(int i=0;i<G[u].size();i++)
+        {
+            int v=G[u][i];
+            if(--in[v]==0) Q.push(v);
+        }
+    }
+    return sum==n;//可完全拓扑
+}
+int main()
+{
+    while(scanf("%d%d",&n,&m)==2&&n)
+    {
+        memset(in,0,sizeof(in));
+        for(int i=0;i<n;i++) G[i].clear();
+        for(int i=0;i<m;i++)
+        {
+            int u,v;
+            scanf("%d%d",&u,&v);
+            G[u].push_back(v);
+            in[v]++;
+        }
+        printf("%s\n",topo()?"YES":"NO");
+    }
+    return 0;
+}
